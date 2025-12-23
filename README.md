@@ -27,4 +27,4 @@ This is a **Mood Tracker web application** that allows users to track their dail
 ## 🔗 Live Demo
 
 View the live Mood Tracker here:  
-[Live Mood Tracker](https://YOUR-USERNAME.github.io/mood-tracker/)
+[Live Mood Tracker](https://2430657anshitarajput.github.io/Mood-Tracker/)
