@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Mood Tracker (Attractive)</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; /* Cleaner, modern font */
+            max-width: 650px; /* Slightly wider container */
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #e0f7fa; /* Calming light blue background */
+            color: #333;
+        }
+        .container {
+            background: white;
+            padding: 30px; /* More breathing room */
+            border-radius: 15px; /* Softer edges */
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1); /* Deeper, softer shadow */
+        }
+        h1, h2 {
+            color: #00796b; /* Teal color for headings */
+        }
+        p {
+            color: #555;
+        }
+        .mood-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px; /* Slightly larger gap */
+            margin-bottom: 25px;
+        }
+        .mood-button {
+            padding: 12px 18px; /* Larger buttons */
+            border: none;
+            border-radius: 8px; /* Rounded buttons */
+            cursor: pointer;
+            font-size: 16px;
+            flex-grow: 1;
+            text-align: center;
+            transition: transform 0.2s, box-shadow 0.2s; /* Smooth transitions */
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Subtle shadow on buttons */
+        }
+        .mood-button:hover { 
+            opacity: 0.9; 
+            transform: translateY(-2px); /* Lift button on hover */
+            box-shadow: 0 6px 12px rgba(0,0,0,0.15); /* Stronger shadow on hover */
+        }
+
+        /* Color coding */
+        .happy { background-color: #ffeb3b; }
+        .sad { background-color: #2196f3; color: white; }
+        .angry { background-color: #f44336; color: white; }
+        .cried { background-color: #00bcd4; }
+        .sleepy { background-color: #9c27b0; color: white; }
+        .hungry { background-color: #ff9800; }
+        .overthinker { background-color: #607d8b; color: white; }
+        .thirsty { background-color: #03a9f4; color: white; }
+        
+        #action-suggestion {
+            margin-top: 20px;
+            padding: 20px; /* More padding */
+            background-color: #e8f5e9; /* Light green */
+            border-left: 5px solid #4caf50; /* Green border */
+            border-radius: 5px;
+            animation: fadeIn 0.5s; /* Fade in effect */
+        }
+        @keyframes fadeIn {
+            from {opacity: 0;}
+            to {opacity: 1;}
+        }
+
+        #log-area { margin-top: 25px; }
+        .log-entry {
+            padding: 15px; /* Larger log entries */
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.2s; /* Hover effect for logs */
+        }
+        .log-entry:hover {
+            background-color: #f9f9f9; /* Highlight log on hover */
+        }
+        .log-entry:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>How are you feeling today?</h1>
+        <p>Your logs will disappear when you close this browser tab/window.</p>
+        <div class="mood-buttons">
+            <!-- The Happy button is linked to a separate happy.html page -->
+            <a href="happy.html" class="mood-link" style="text-decoration: none; flex-grow: 1;">
+                <button class="mood-button happy" onclick="logMood('Happy')">😊 Happy</button>
+            </a>
+            <a href="sad.html" class="mood-link"><button class="mood-button sad" onclick="logMood('Sad')">😢 Sad</button></a>
+
+            <a href="angry.html" class="mood-link"><button class="mood-button angry" onclick="logMood('Angry')">😡 Angry</button></a>
+
+            <a href="cried.html" class="mood-link"><button class="mood-button cried" onclick="logMood('Cried')">😭 Cried</button></a>
+            <a href="sleepy.html" class="mood-link"><button class="mood-button sleepy" onclick="logMood('Sleepy')">😴 Sleepy</button></a>
+            <a href="hungry.html" class="mood-link"><button class="mood-button hungry" onclick="logMood('Hungry')">🍔 Hungry</button></a>
+            <a href="overthinker.html" class="mood-link"><button class="mood-button overthinker" onclick="logMood('Overthinker')">🧠 Overthinker</button></a>
+            <a href="thristy.html" class="mood-link"><button class="mood-button thirsty" onclick="logMood('Thirsty')">🥤 Thirsty</button></a>
+        </div>
+
+        <div id="action-suggestion" style="display: none;">
+            <!-- Dynamic action suggestions appear here -->
+        </div>
+
+        <h2>Your Log:</h2>
+        <div id="log-area">
+            <!-- Mood entries will be dynamically added here -->
+        </div>
+    </div>
+
+    <script>
+        const MOOD_STORAGE_KEY = 'dailyMoodTrackerSessionEntries';
+       
+        // Provided the full actionsMap to prevent JS errors and enable generic suggestions
+        const actionsMap = {
+            'Happy': 'Savor this feeling! Share your joy with a loved one or write down what you are grateful for.',
+            'Sad': 'Allow yourself to feel this way. Consider talking to a trusted friend, listening to music, or getting some rest.',
+            'Angry': 'Take a time-out and breathe deeply. Physical activity like a brisk walk can help release tension before you express concerns calmly.',
+            'Cried': 'Hydrate and practice self-compassion. Crying is a healthy release. Wrap yourself in a blanket or take a warm shower.',
+            'Sleepy': 'Listen to your body. Plan to get quality sleep tonight or take a short, healthy nap if possible.',
+            'Hungry': 'Time for a healthy meal or snack. Ensure you are meeting your basic needs mindfully.',
+            'Overthinker': 'Try a mindfulness exercise or write down your thoughts in a journal (a "brain dump"). Distraction with a hobby can also help.',
+            'Thirsty': 'Drink a glass of water right now! Dehydration can affect your mood and focus.',
+        };
+
+
+        function logMood(mood) {
+            const now = new Date();
+            const entry = {
+                mood: mood,
+                timestamp: now.toISOString(),
+                dateDisplay: now.toLocaleString()
+            };
+
+            // Using sessionStorage
+            const entries = JSON.parse(sessionStorage.getItem(MOOD_STORAGE_KEY)) || [];
+            entries.unshift(entry);
+            sessionStorage.setItem(MOOD_STORAGE_KEY, JSON.stringify(entries));
+            
+            displayLogs(); 
+            // Only display action suggestion if it's NOT the Happy mood (which redirects to happy.html)
+            if (mood !== 'Happy') {
+                displayActionSuggestion(mood); 
+            }
+        }
+
+        function displayActionSuggestion(mood) {
+            const suggestionBox = document.getElementById('action-suggestion');
+            const suggestionText = actionsMap[mood] || 'Keep tracking your moods to understand yourself better!';
+            
+            suggestionBox.innerHTML = `<strong>Actionable Insight for "${mood}":</strong> ${suggestionText}`;
+            suggestionBox.style.display = 'block';
+            
+            // Hide the suggestion after a few seconds
+            setTimeout(() => {
+                suggestionBox.style.display = 'none';
+            }, 10000); 
+        }
+
+        function displayLogs() {
+            const logArea = document.getElementById('log-area');
+            logArea.innerHTML = '';
+            const entries = JSON.parse(sessionStorage.getItem(MOOD_STORAGE_KEY)) || [];
+
+            if (entries.length === 0) {
+                logArea.innerHTML = '<p>No moods logged yet.</p>';
+                return;
+            }
+
+            entries.forEach(entry => {
+                const entryDiv = document.createElement('div');
+                entryDiv.classList.add('log-entry');
+                entryDiv.innerHTML = `<strong>${entry.dateDisplay}</strong>: <span class="${entry.mood.toLowerCase()} mood-button">${entry.mood}</span>`;
+                logArea.appendChild(entryDiv);
+            });
+        }
+
+        window.onload = displayLogs;
+    </script>
+</body>
+</html>
